@@ -42,7 +42,7 @@ class Scene(QWidget):
         self.obstacle_x = 0.1
         self.obstacle_y = 0.9
         self.obstacle_width = 0.09
-        self.obstacle_height = 0.5
+        self.obstacle_height = 0.21
         self.paused = False
         self.scene_num = 0
         self.show_obstacle = False
@@ -111,10 +111,10 @@ class Scene(QWidget):
         Подготовка симуляции
         :return:
         """
-        self.iter_num = 10
+        self.iter_num = 5
         self.density = 1000
 
-        res = 50
+        res = 100
 
         dom_height = 1
         dom_width = dom_height / self.sim_height * self.sim_width
@@ -157,7 +157,7 @@ class Scene(QWidget):
         Функция отрисовки
         :return:
         """
-        cell_scale = 1.1
+        cell_scale = 1
         self.canvas.fill(Qt.GlobalColor.white)
         self.painter.begin(self.canvas)
         pen = QPen()
@@ -199,7 +199,7 @@ class Scene(QWidget):
                 int(self.cX(self.obstacle_x)),
                 int(self.cY(self.obstacle_y)),
                 int(self.cX(self.obstacle_width)),
-                int(self.cY(1 - self.obstacle_height))
+                int(self.cY(self.obstacle_height))
             )
             self.painter.drawRect(rect)
         self.painter.end()
