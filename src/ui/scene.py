@@ -41,7 +41,7 @@ class Scene(QWidget):
         self.over_relaxation = 1.9
         self.obstacle_x = 0.1
         self.obstacle_y = 0.9
-        self.obstacle_width = 0.38
+        self.obstacle_width = 0.09
         self.obstacle_height = 0.5
         self.paused = False
         self.scene_num = 0
@@ -59,34 +59,58 @@ class Scene(QWidget):
         self.setup_scene()
 
     def x_coord_change(self, new_x_coord: float):
+        """
+        Слот для изменения значения слайдера для x координаты
+        :param new_x_coord: новое значение x
+        :return:
+        """
         self.set_obstacle(new_x_coord / 100, self.obstacle_y, False)
         self.simulate()
         self.draw()
 
     def y_coord_change(self, new_y_coord: float):
+        """
+        Слот для изменения значения слайдера для y координаты
+        :param new_y_coord: новое значение y
+        :return:
+        """
         self.set_obstacle(self.obstacle_x, new_y_coord / 100, False)
         self.simulate()
         self.draw()
 
     def width_change(self, new_w):
+        """
+        Слот для изменения значения слайдера для ширины
+        :param new_w: новое значение ширины
+        :return:
+        """
         self.obstacle_width = new_w / 100
         self.set_obstacle(self.obstacle_x, self.obstacle_y, False)
         self.simulate()
         self.draw()
 
     def height_change(self, new_h):
+        """
+        Слот для изменения значения слайдера для высоты
+        :param new_h: новое значение высоты
+        :return:
+        """
         self.obstacle_height = new_h / 100
         self.set_obstacle(self.obstacle_x, self.obstacle_y, False)
         self.simulate()
         self.draw()
 
-    def cX(self, x):
+    def cX(self, x):  # пересчёт координаты х
         return x * self.cScale
 
-    def cY(self, y):
+    def cY(self, y):  # пересчёт координаты х
         return CANVAS_HEIGHT - y * self.cScale
 
     def setup_scene(self):
+        """
+        Подготовка симуляции
+        :return:
+        """
         self.iter_num = 10
         self.density = 1000
 
@@ -129,6 +153,10 @@ class Scene(QWidget):
         self.show_velocities = False
 
     def draw(self):
+        """
+        Функция отрисовки
+        :return:
+        """
         cell_scale = 1.1
         self.canvas.fill(Qt.GlobalColor.white)
         self.painter.begin(self.canvas)
@@ -143,7 +171,6 @@ class Scene(QWidget):
             for i in range(self.fluid.num_x):
                 if self.show_smoke:
                     s = self.fluid.m[i * n + j]
-                    #print(self.fluid.m)
                     color[0] = 255 * s
                     color[1] = 255 * s
                     color[2] = 255 * s
@@ -162,34 +189,47 @@ class Scene(QWidget):
                 g = int(color[1])
                 b = int(color[2])
 
-                #print(color)
                 pen.setColor(QColor(r, g, b, 255))
                 self.painter.setBrush(QColor(r, g, b, 255))
                 self.painter.drawRect(x, y, cx, cy)
 
         if self.show_obstacle:
-            self.painter.setBrush(Qt.GlobalColor.white)
+            self.painter.setBrush(Qt.GlobalColor.darkCyan)
             rect = QRect(
                 int(self.cX(self.obstacle_x)),
                 int(self.cY(self.obstacle_y)),
                 int(self.cX(self.obstacle_width)),
                 int(self.cY(1 - self.obstacle_height))
             )
-            #print(rect.x(), rect.y(), rect.width(), rect.height())
             self.painter.drawRect(rect)
         self.painter.end()
         self.label.setPixmap(self.canvas)
 
     def simulate(self):
+        """
+        Запуск симуляции жидкости
+        :return:
+        """
         if not self.paused:
             self.fluid.simulate(self.dt, self.gravity, self.iter_num)
             self.frame_num += 1
 
     def update_scene(self) -> None:
+        """
+        Функция обновления экрана
+        :return:
+        """
         self.simulate()
         self.draw()
 
     def set_obstacle(self, x, y, reset):
+        """
+        Размещение препятствия
+        :param x: х координата
+        :param y: у координата
+        :param reset: флаг обновления (препятствие только появилось или просто подвинулось)
+        :return:
+        """
         vx = 0
         vy = 0
 
@@ -213,8 +253,6 @@ class Scene(QWidget):
                 cur_x = self.cX((i + 0.5) * self.fluid.h)
                 cur_y = self.cY((j + 0.5) * self.fluid.h)
 
-                print('curx', cur_x)
-                print('cury', cur_y)
 
                 if (self.cX(self.obstacle_x) <= cur_x <= self.cX(self.obstacle_x) + self.cX(self.obstacle_width)
                         and self.cY(self.obstacle_y) <= cur_y <= self.cY(self.obstacle_y) + self.cY(self.obstacle_height)):
@@ -226,7 +264,7 @@ class Scene(QWidget):
                     pen.setWidth(int(self.fluid.h) + 10)
                     self.painter.setPen(pen)
                     self.painter.drawPoint(int(self.cX(i * self.fluid.h)), int(self.cY(j * self.fluid.h)))
-                    print(int(self.cX(i * self.fluid.h)), int(self.cY(j * self.fluid.h)))
+                    #print(int(self.cX(i * self.fluid.h)), int(self.cY(j * self.fluid.h)))
                     self.painter.end()
                     self.label.setPixmap(self.canvas)
 

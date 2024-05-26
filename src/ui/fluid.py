@@ -24,6 +24,12 @@ class Fluid:
         self.cnt = 0
 
     def integrate(self, dt, gravity):
+        """
+        Суммирование скоростей
+        :param dt: шаг времени
+        :param gravity: значение ускорения св. падения
+        :return:
+        """
         n = self.num_y
         for j in range(1, self.num_y):
             for i in range(1, self.num_x - 1):
@@ -31,10 +37,16 @@ class Fluid:
                     self.v[i * n + j] += gravity * dt
 
     def solve_incompressibility(self, num_iters, dt, over_relaxation):
+        """
+        Выполнение условия несжимаемости жидкости
+        :param num_iters: число итераций прогонки уравнения
+        :param dt: шаг времени
+        :param over_relaxation: коэф. успокоения (для устойчивости решения)
+        :return:
+        """
         n = self.num_y
         cp = self.density * self.h / dt
 
-        #print(num_iters, self.num_x, self.num_y)
 
         for iter_num in range(num_iters):
             for j in range(1, self.num_y - 1):
@@ -62,11 +74,11 @@ class Fluid:
                     self.v[i * n + j] -= sy0 * p
                     self.v[i * n + j + 1] += sy1 * p
 
-        #print(self.s)
-
-        #print('inc done')
-
     def extrapolate(self):
+        """
+        Распространиение скоростей на соседние клетки
+        :return:
+        """
         n = self.num_y
         for i in range(self.num_x):
             self.u[i * n + 0] = self.u[i * n + 1]
@@ -75,6 +87,13 @@ class Fluid:
             self.v[0 * n + j] = self.v[1 * n + j]
 
     def sample_field(self, x, y, field):
+        """
+        Расчёт поля скоростей
+        :param x: х координата
+        :param y: у координата
+        :param field: тип поля (U, V, S)
+        :return: значение поля в точке
+        """
         n = self.num_y
         h = self.h
         h1 = 1.0 / h
@@ -116,18 +135,35 @@ class Fluid:
         return val
 
     def avg_u(self, i, j):
+        """
+        Усреднение U-составляющей скорости
+        :param i: номер ячейки по х
+        :param j: номер ячейки по y
+        :return:
+        """
         n = self.num_y
         u = (self.u[i * n + j - 1] + self.u[i * n + j] +
              self.u[(i + 1) * n + j - 1] + self.u[(i + 1) * n + j]) * 0.25
         return u
 
     def avg_v(self, i, j):
+        """
+        Усреднение V-составляющей скорости
+        :param i: номер ячейки по х
+        :param j: номер ячейки по y
+        :return:
+        """
         n = self.num_y
         v = (self.v[(i - 1) * n + j] + self.v[i * n + j] +
              self.v[(i - 1) * n + j + 1] + self.v[i * n + j + 1]) * 0.25
         return v
 
     def advect_vel(self, dt):
+        """
+        Пересчёт предыдущей ячейки жидкости
+        :param dt: шаг времени
+        :return:
+        """
         self.new_u[:] = self.u
         self.new_v[:] = self.v
 
@@ -164,6 +200,11 @@ class Fluid:
         self.v[:] = self.new_v
 
     def advect_smoke(self, dt):
+        """
+        Расчёт завихрений
+        :param dt: шаг времени
+        :return:
+        """
         self.new_m[:] = self.m
 
         n = self.num_y
@@ -183,6 +224,13 @@ class Fluid:
         self.m[:] = self.new_m
 
     def simulate(self, dt, gravity, iter_num):
+        """
+        Вычислить параметры симуляции
+        :param dt: шаг времени
+        :param gravity: значение гравитации
+        :param iter_num: число прогонок решения
+        :return:
+        """
         self.integrate(dt, gravity)
 
         self.p.fill(0)
